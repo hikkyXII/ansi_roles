@@ -1,0 +1,73 @@
+---
+# tasks file for el_initial_config
+
+- name: Set vm.swapiness = 10
+  sysctl:
+    name: vm.swappiness
+    value: 10
+    state: present
+
+- name: install basic pckeges
+  yum:
+    name:
+      - net-tools
+      - telnet
+      - bind-utils
+      - openssh-clients
+      - mc
+      - ntpdate
+      - tcpdump
+      - nfs-utils
+      - wget
+      - sysstat
+      - psmisc
+      - rsync
+      - mtr
+      - whois
+      - man
+      - unzip
+      - zip
+      - vim
+      - git
+    state: latest
+
+- name: install epel-repo
+  yum:
+    name:
+      - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    state: present
+- name: install iftop, htop
+  yum:
+    name:
+      - htop
+      - iftop
+    state: latest
+
+- name: Ensures htop config dir exists
+  file: 
+    path: /root/.config/htop 
+    state: directory
+    recurse: yes
+
+- name: Copy htop config
+  copy: 
+    src: htoprc
+    dest: /root/.config/htop/htoprc
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+    force: no
+  register: htoprccopy
+
+
+- name: configure htop
+  lineinfile:
+    state: present
+    path: /root/.config/htop/htoprc
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+  with_items:
+    - {regex: "^hide_userland_threads=?", line: "hide_userland_threads=1" }
+    - {regex: "^detailed_cpu_time=?", line: "detailed_cpu_time=1" }
+    - {regex: "^fields.*", line: "fields=0 48 17 18 38 39 40 2 46 49 47 111 109 110 1" }
+  when: not htoprccopy.changed

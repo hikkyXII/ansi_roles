@@ -1,0 +1,32 @@
+- name: SELinux fcontext
+  sefcontext:
+    target: "{{ item }}"
+    setype: httpd_sys_rw_content_t
+    state: present
+  with_items:
+    - /var/www/nextcloud/data(/.*)?
+    - /var/www/nextcloud/config(/.*)?
+    - /var/www/nextcloud/apps(/.*)?
+    - /var/www/nextcloud/.user.ini
+    - /var/www/nextcloud/3rdparty/aws/aws-sdk-php/src/data/logs(/.*)?
+    #- /var/www/nextcloud(/.*)?'
+
+- name: SELinux booleans
+  seboolean:
+    name: "{{ item }}"
+    state: yes
+    persistent: yes
+  with_items:
+#    - httpd_unified wsed forupdate from GUI
+    - httpd_can_network_connect
+    - httpd_can_sendmail
+    - httpd_use_cifs
+    - httpd_can_connect_ldap
+    - httpd_use_fusefs
+    - httpd_use_gpg
+    - httpd_can_sendmail
+    - daemons_enable_cluster_mode
+
+- name: SELinux for restorecon files
+  command: "restorecon -RF /var/www/nextcloud"
+

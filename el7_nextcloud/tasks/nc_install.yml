@@ -1,0 +1,43 @@
+- name: Creates directory for nextcloud
+  file:
+    path: /var/www/nextcloud
+    state: directory
+
+- name: Download nextcloud archive
+  unarchive:
+    src: "{{ nextcloud_archive }}"
+    dest: /var/www
+    remote_src: yes
+    owner: nginx
+    group: nginx
+
+- name: Copy nextcloud config
+  template:
+    src: config.php
+    dest: /var/www/nextcloud/config/config.php
+    owner: nginx
+    group: nginx
+    mode: '0640'
+    force: no
+
+- name: Packages install php-posix
+  yum:
+    name:
+      - php-process
+    state: latest
+    disable_gpg_check: yes
+
+- name: Install nextcloud
+  command: 'sudo -u nginx php /var/www/nextcloud/occ maintenance:install --database "mysql" --database-name "nextcloud" --database-user "nextuser" --database-pass "{{ db_new_nextcloud_pass }}" --admin-user "nadmin" --admin-pass "nadmin" --data-dir "/var/www/nextcloud/data"'
+
+- name: Configure trusted domain 
+  command: 'sudo -u nginx php /var/www/nextcloud/occ config:system:set trusted_domains 0 --value=cloud.{{ web_domain }}'
+
+- name: Configure url overwrite
+  command: 'sudo -u nginx php /var/www/nextcloud/occ config:system:set overwrite.cli.url --value=https://cloud.{{ web_domain }}'
+
+- name: Packages remove php-posix
+  yum:
+    name:
+      - php-process
+    state: absent

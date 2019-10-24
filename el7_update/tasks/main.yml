@@ -1,0 +1,26 @@
+---
+# tasks file for el_default_config
+- name: yum update
+  yum:
+    name: '*'
+    state: latest
+  register: updated
+
+- name: Reboot server
+  command: /sbin/shutdown -r +1
+  async: 0
+  poll: 0
+  ignore_errors: true
+  when: updated.changed
+
+- name: Pause for reboot
+  pause:
+    minutes: 1
+  when: updated.changed
+
+- name: Wait for the server to start
+  wait_for_connection:
+    timeout: 240
+    delay: 20
+  when: updated.changed
+

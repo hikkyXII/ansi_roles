@@ -1,0 +1,38 @@
+- name: Copy MariaDB config
+  copy:
+    src: server.cnf
+    dest: /etc/my.cnf.d/server.cnf
+    owner: mysql
+    group: mysql
+    mode: '0644'
+
+- name: Create log directory for mysql
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: mysql
+    group: mysql
+    mode: "0740"
+  with_items:
+    - /var/log/mysql
+
+- name: Start MatiaDB 
+  systemd:
+    name: "{{ item }}"
+    state: started
+  with_items:
+    - mariadb
+
+- name: Mariadb security setup & create nextcloud db
+  command: 'mysql -ne "{{ item }}"'
+  with_items:
+    - DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1')
+    - DELETE FROM mysql.user WHERE User=''
+    - DROP DATABASE IF EXISTS test
+    - DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'
+    - UPDATE mysql.user SET Password=PASSWORD('{{ db_new_root_pass }}') WHERE User='root';
+    - CREATE USER 'nextuser'@'localhost' IDENTIFIED BY '{{ db_new_nextcloud_pass }}';
+    - CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+    - GRANT ALL PRIVILEGES on nextcloud.* to 'nextuser'@'localhost'
+    - FLUSH PRIVILEGES
+  changed_when: False

@@ -1,0 +1,3 @@
+---
+# vars file for el7_nextcloud
+nextcloud_archive: https://download.nextcloud.com/server/releases/nextcloud-16.0.3.zip

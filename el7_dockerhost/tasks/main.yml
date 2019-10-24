@@ -1,0 +1,33 @@
+---
+# tasks file for el7_dockerhost
+
+- name: Install device-mapper-persistent-data
+  yum:
+    name: 
+      - device-mapper-persistent-data
+      - lvm2
+    state: latest
+
+- name: Add Docker repo
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docer-ce.repo
+
+- name: Install Docker
+  yum:
+    name:
+      - docker-ce
+      - docker-compose
+    state: latest
+
+- name: Start Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Install ctop
+  get_url:
+    url: https://github.com/bcicen/ctop/releases/download/v0.7.2/ctop-0.7.2-linux-amd64
+    dest: /usr/local/bin/ctop
+    mode: '0755'

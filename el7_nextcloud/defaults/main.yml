@@ -1,0 +1,5 @@
+---
+# defaults file for el7_nextcloud
+web_domain: example.com
+date_time_zone: Europe/Minsk
+nfs_data_share: none

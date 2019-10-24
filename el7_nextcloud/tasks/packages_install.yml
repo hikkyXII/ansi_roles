@@ -1,0 +1,83 @@
+- name: Copy MariaDB repo file
+  copy:
+    src: MariaDB.repo
+    dest: /etc/yum.repos.d/MariaDB.repo
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy Nginx repo file
+  copy:
+    src: nginx.repo
+    dest: /etc/yum.repos.d/nginx.repo
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: install remi-repo
+  yum:
+    name:
+      - http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+    state: present
+
+- name: Disable repo remi-safe
+  ini_file:
+    dest: /etc/yum.repos.d/remi-safe.repo
+    section: remi-safe
+    option: enabled
+    value: "0"
+
+- name: Enable repo remi-php73
+  ini_file:
+    dest: /etc/yum.repos.d/remi-php73.repo
+    section: remi-php73
+    option: enabled
+    value: "1"
+
+- name: Enable repo remi
+  ini_file:
+    dest: /etc/yum.repos.d/remi.repo
+    section: remi
+    option: enabled
+    value: "1"
+
+- name: install epel-repo
+  yum:
+    name:
+      - epel-release
+    state: latest
+
+- name: Packages install
+  yum:
+    name:
+      - unzip
+      - curl
+      - wget
+      - bash-completion
+      - policycoreutils-python
+      - mlocate
+      - bzip2
+      - nginx
+      - MariaDB-server
+      - MariaDB-client
+      - redis
+      - php
+      - php-gd
+      - php-mbstring
+      - php-intl
+      - php-pecl-apcu
+      - php-mysqlnd
+      - php-pecl-redis
+      - php-opcache
+      - php-imagick
+      - php-fpm
+      - php-xml
+      - php-dom
+      - php-zip
+      - php-ldap
+      - php-pecl-apcu
+      - php-smbclient
+      - php-ldap
+      - policycoreutils-python
+      - libsemanage-python
+    state: present

@@ -1,0 +1,79 @@
+---
+# tasks file for el7_haproxy_ius
+
+- name: install epel-repo
+  yum:
+    name:
+      - epel-release
+    state: present
+
+- name: install ius-repo
+  yum:
+    name:
+      - https://centos7.iuscommunity.org/ius-release.rpm
+    state: present
+
+- name: Creates directory for cert
+  file:
+    path: /etc/haproxy/
+    state: directory
+    mode: '0755'
+
+- name: Copy HAProxy config
+  copy:
+    src: haproxy.cfg
+    dest: /etc/haproxy/haproxy.cfg
+    force: no
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: install HAProxy
+  yum:
+    name:
+      - haproxy18u
+      - certbot
+    state: present
+
+- name: Creates directory for cert
+  file:
+    path: /etc/haproxy/ssl/
+    state: directory
+    mode: '0755'
+
+- name: Generate openssl key 
+  openssl_privatekey:
+    path: /etc/haproxy/ssl/self.key
+    size: 2048
+
+- name: Generate csr
+  openssl_csr:
+    path: /etc/haproxy/ssl/self.csr
+    privatekey_path: /etc/haproxy/ssl/self.key
+#    common_name: www.ansible.com
+
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    path: /etc/haproxy/ssl/self.crt
+    privatekey_path: /etc/haproxy/ssl/self.key
+    csr_path: /etc/haproxy/ssl/self.csr
+    provider: selfsigned
+
+- name: Generate combo pem
+  shell: "cat /etc/haproxy/ssl/self.crt /etc/haproxy/ssl/self.key > /etc/haproxy/ssl/combo.pem"
+
+- name: enable HAProxy service
+  systemd:
+    name: "haproxy"
+    state: started
+    enabled: yes
+
+- name: Allow http/s in firewalld
+  firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  with_items:
+    - http
+    - https
