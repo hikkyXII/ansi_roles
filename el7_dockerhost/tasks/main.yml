@@ -20,6 +20,11 @@
       - docker-compose
     state: latest
 
+- name: Create docker group
+  group:
+    name: docker
+    state: present
+
 - name: Start Docker service
   systemd:
     name: docker
