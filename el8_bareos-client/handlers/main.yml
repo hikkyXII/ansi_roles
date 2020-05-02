@@ -1,0 +1,11 @@
+---
+
+- name: Restart Bareos-dir service
+  service:
+    name: bareos-dir
+    state: restarted
+
+- name: Restart Bareos-fd service
+  service:
+    name: bareos-fd
+    state: restarted

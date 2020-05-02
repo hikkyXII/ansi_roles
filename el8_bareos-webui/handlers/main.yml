@@ -1,0 +1,20 @@
+---
+
+- name: Restart Httpd
+  service:
+    name: httpd
+    enabled: yes
+    state: restarted
+
+- name: Restart Bareos Director 
+  service:
+    name: bareos-dir
+    enabled: yes
+    state: restarted
+
+- name: Restart Firewall
+  service:
+    name: firewalld
+    enabled: yes
+    state: restarted
+

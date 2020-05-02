@@ -1,0 +1,44 @@
+---
+
+- name: Install WebUI package
+  package:
+    name: bareos-webui
+    state: present
+  notify:
+    - Restart Httpd
+
+- meta: flush_handlers
+
+- name: Create WebUI admin user
+  template:
+    src: webui-admin.conf.j2
+    dest: /etc/bareos/bareos-dir.d/console/admin.conf
+    owner: bareos
+    group: bareos
+    mode: 0640
+  notify:
+    - Restart Bareos Director
+
+- block:
+    - name: Install Selinux management package
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - python3-libselinux
+        - python3-libsemanage
+
+    - name: Set Selinux config
+      seboolean:
+        name: httpd_can_network_connect
+        state: yes
+        persistent: yes
+  when: ansible_os_family == 'RedHat' and ansible_selinux != false and ansible_selinux.status != 'disabled'
+
+- name: Open http port for web-ui
+  firewalld: 
+    service: http
+    permanent: yes
+    state: enabled
+  notify:
+    - Restart Firewall

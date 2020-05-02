@@ -1,0 +1,82 @@
+---
+
+- name: Install MariaDB
+  package:
+    name: '{{ item }}'
+    state: present
+  with_items: '{{ mariadb_packages }}'
+
+- name: Mariadb server config
+  ini_file:
+    path: /etc/my.cnf.d/mariadb-server.cnf
+    section: mysqld
+    option: '{{ item.key }}'
+    value: '{{ item.value }}'
+  with_items:
+    - {key: bind-address ,value: 127.0.0.1 }
+    - {key: socket ,value: /var/lib/mysql/mysql.sock }
+    - {key: innodb_file_per_table ,value: 1 }
+    - {key: innodb_flush_method ,value: O_DIRECT }
+
+- name: Mariadb client config
+  ini_file:
+    path: /etc/my.cnf.d/client.cnf
+    section: client
+    option: '{{ item.key }}'
+    value: '{{ item.value }}'
+  with_items:
+    - {key: socket ,value: /var/lib/mysql/mysql.sock }
+
+- block:
+  - name: Start MariaDB(mysql) service and enable on boot
+    service:
+      name: mysql
+      enabled: yes
+      state: started
+  rescue:
+  - name: Start MariaDB service and enable on boot
+    service:
+      name: mariadb
+      enabled: yes
+      state: started
+
+- name: Delete anonymous MariaDB server user
+  mysql_user:
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    user: ""
+    host: "{{ ansible_hostname }}"
+    state: "absent"
+  ignore_errors: yes
+
+- name: Delete anonymous MariaDB server user for localhost
+  mysql_user:
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    user: ""
+    state: "absent"
+  ignore_errors: yes
+
+- name: Remove the MariaDB test database
+  mysql_db:
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    db: test
+    state: absent
+  ignore_errors: yes
+
+# 'localhost' needs to be the last item for idempotency, see
+# http://ansible.cc/docs/modules.html#mysql-user
+- name: Change root user password on first run
+  mysql_user:
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    login_user: root
+    login_password: ''
+    name: root
+    password: "{{ mariadb_root_password }}"
+    priv: '*.*:ALL,GRANT'
+    host: "{{ item }}"
+  with_items:
+    - "{{ ansible_hostname }}"
+    - 127.0.0.1
+    - ::1
+    - localhost
+  ignore_errors: yes
+  no_log: false

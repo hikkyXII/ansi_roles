@@ -1,0 +1,11 @@
+---
+
+mariadb_packages:
+  - mariadb-server
+  - mariadb-common
+  - mariadb-devel
+  - python3-PyMySQL
+
+postgres_packages:
+  - postgresql-server
+  - postgresql-contrib
