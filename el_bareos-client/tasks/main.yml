@@ -1,0 +1,32 @@
+---
+
+- name: Install Bareos client
+  package:
+    name: bareos-filedaemon
+    state: present
+
+- name: Start and enable Bareos client service
+  service:
+    name: "bareos-fd"
+    enabled: yes
+    state: started
+
+- name: Grep fd password
+  shell: cat /etc/bareos/bareos-fd.d/director/bareos-dir.conf | grep 'Password =' | sed -e 's/  Password = //' | sed 's/\"//g'
+  register: fd_password_line
+
+- name: Configure clients on Director
+  template:
+    src: client-fd.conf.j2
+    dest: /etc/bareos/bareos-dir.d/client/{{ ansible_hostname }}-fd.conf
+    owner: bareos
+    group: bareos
+  notify: Restart Bareos-dir service
+  delegate_to: '{{ bareos_server_addr }}'
+
+- name: Open http port for web-ui
+  firewalld: 
+    port: 9102/tcp
+    permanent: yes
+    immediate: yes
+    state: enabled

@@ -1,2 +1,0 @@
-dependencies:
-  - { role: el8_bareos-basic }

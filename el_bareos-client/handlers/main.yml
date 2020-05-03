@@ -4,6 +4,7 @@
   service:
     name: bareos-dir
     state: restarted
+  delegate_to: '{{ bareos_server_addr }}'
 
 - name: Restart Bareos-fd service
   service:

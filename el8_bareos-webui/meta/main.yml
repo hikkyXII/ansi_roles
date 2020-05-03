@@ -1,2 +1,2 @@
 dependencies:
-  - { role: el8_bareos-basic }
+  - { role: el_bareos-basic }

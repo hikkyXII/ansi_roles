@@ -1,0 +1,5 @@
+Client {
+  Name = {{ ansible_hostname }}
+  Address = {{ ansible_fqdn }}
+  Password = {{ fd_password_line.stdout }}
+}

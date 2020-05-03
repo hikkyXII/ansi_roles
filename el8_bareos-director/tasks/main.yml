@@ -71,10 +71,11 @@
 - name: Open http port for web-ui
   firewalld: 
     port: 9103/tcp
+    immediate: yes
     permanent: yes
     state: enabled
-  notify:
-    - Restart Firewall
+  # notify:
+  #   - Restart Firewall
 
 - name: Configure client on Bareos director
   include: bareos-client.yml
