@@ -78,6 +78,8 @@
       - php-pecl-apcu
       - php-smbclient
       - php-ldap
+      - php-bcmath 
+      - php-gmp
       - policycoreutils-python
       - libsemanage-python
     state: present
